@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/reservations")
@@ -46,13 +47,22 @@ public class ReservationController {
                                                           @RequestBody Reservation reservationToUpdate) {
         log.info("Updating reservation with id: {}", id);
         // Implementation for updating a reservation would go here
-        return ResponseEntity.status(HttpStatus.OK).body(reservationService.updateReservation(id, reservationToUpdate));
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reservationService.updateReservation(id, reservationToUpdate));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
         log.info("Deleting reservation with id: {}", id);
-        reservationService.deleteReservation(id);
-        return ResponseEntity.noContent().build();
+        try {
+            reservationService.deleteReservation(id);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok().build();
     }
 
 

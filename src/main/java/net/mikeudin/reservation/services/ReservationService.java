@@ -62,19 +62,29 @@ public class ReservationService {
 
     public Reservation updateReservation(Long id, Reservation reservationToUpdate) {
         Reservation oldReservation = getReservationById(id);
+
+        if (oldReservation.status() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Only reservations with status PENDING can be updated");
+        }
+
         Reservation updatedReservation = new Reservation(
                 oldReservation.id(),
-                reservationToUpdate.userId() != null ? reservationToUpdate.userId() : oldReservation.userId(),
-                reservationToUpdate.roomId() != null ? reservationToUpdate.roomId() : oldReservation.roomId(),
-                reservationToUpdate.startDate() != null ? reservationToUpdate.startDate() : oldReservation.startDate(),
-                reservationToUpdate.endDate() != null ? reservationToUpdate.endDate() : oldReservation.endDate(),
-                reservationToUpdate.status() != null ? reservationToUpdate.status() : oldReservation.status()
+                reservationToUpdate.userId(),
+                reservationToUpdate.roomId(),
+                reservationToUpdate.startDate(),
+                reservationToUpdate.endDate(),
+                ReservationStatus.PENDING
         );
         reservations.put(id, updatedReservation);
         return updatedReservation;
     }
 
     public void deleteReservation(Long id) {
+
+        if (!reservations.containsKey(id)) {
+            throw new NoSuchElementException("Reservation with id " + id + " not found");
+        }
+        log.info("Deleting reservation with id: {}", id);
         reservations.remove(id);
     }
 }
